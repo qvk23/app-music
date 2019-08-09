@@ -1,3 +1,5 @@
-package com.example.music_app.Model.Entity
+package com.example.music_app.Model.Entity.Entity
 
-data class Song(val id: Int,val title: String, val artist: String) {}
+import java.time.Duration
+
+data class Song(val id: Int,val title: String, val artist: String, val duration: Int)

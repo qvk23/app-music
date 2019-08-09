@@ -4,47 +4,37 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
-import android.widget.TextView
-import com.example.music_app.Model.Entity.Song
+
+import androidx.recyclerview.widget.RecyclerView
+
+import com.example.music_app.Model.Entity.Entity.Song
 import com.example.music_app.R
+import kotlinx.android.synthetic.main.song_display.view.*
 
-class SongListAdapter(var context: Context?, var listMusic: ArrayList<Song>): BaseAdapter() {
-    class ViewHolder(row: View){
-        val textViewId: TextView
-        val textViewArtist: TextView
-        init {
-            textViewId = row.findViewById(R.id.textView1)
-            textViewArtist = row.findViewById(R.id.textView2)
-        }
+
+class SongListAdapter(var context: Context?, var listMusic: ArrayList<Song>):
+    RecyclerView.Adapter<SongListAdapter.MyViewHolder>() {
+
+
+    class MyViewHolder(view: View): RecyclerView.ViewHolder(view){
+        val tvTitle  = view.textView1
+        val tvArtists = view.textView2
+
     }
-    override fun getView(p0: Int, p1: View?, p2: ViewGroup?): View {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongListAdapter.MyViewHolder {
         val view: View?
-        val viewHolder: ViewHolder
-        if(p1 == null){
-            val layoutinflater: LayoutInflater = LayoutInflater.from(context)
-            view = layoutinflater.inflate(R.layout.song_display, null)
-            viewHolder = ViewHolder(view)
-            view.tag = viewHolder
-        }else {
-            view = p1
-            viewHolder = p1.tag as ViewHolder
-        }
-        val song: Song = getItem(p0) as Song
-        viewHolder.textViewId.text = song.title
-        viewHolder.textViewArtist.text = song.artist
-        return view as View
+        val layoutInflater = LayoutInflater.from(context)
+        view = layoutInflater.inflate(R.layout.song_display,null)
+        return MyViewHolder(view)
     }
 
-    override fun getItem(p0: Int): Any {
-        return listMusic.get(p0)
-    }
+    override fun getItemCount() = listMusic.size
 
-    override fun getItemId(p0: Int): Long {
-        return p0.toLong()
-    }
+    override fun onBindViewHolder(holder: SongListAdapter.MyViewHolder, position: Int) {
+        val song: Song = listMusic.get(position)
+        holder.tvTitle.text = song.title
+        holder.tvArtists.text = song.artist
 
-    override fun getCount(): Int {
-        return listMusic.size
+
     }
 }
