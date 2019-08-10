@@ -1,10 +1,12 @@
 package com.example.music_app.View
 
 
+import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
@@ -13,6 +15,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.music_app.Adapter.OnItemClickListener
@@ -23,6 +26,7 @@ import com.example.music_app.Model.DateTimeFormatUtils
 import com.example.music_app.Model.Entity.Entity.Song
 import com.example.music_app.Presenter.MainPresenter
 import com.example.music_app.R
+import com.example.music_app.Service.MusicNotification
 import com.example.music_app.Service.MusicPlayService
 
 // TODO: Rename parameter arguments, choose names that match
@@ -35,11 +39,23 @@ private const val ARG_PARAM2 = "param2"
  *
  */
 class PlayListFragment : Fragment(), MainContract.View, View.OnClickListener, Runnable {
+    private lateinit var presenter: MainPresenter
+    private lateinit var lvSong: RecyclerView
+    private lateinit var btnNext: ImageButton
+    private lateinit var btnPrev: ImageButton
+    private lateinit var btnPlay: ImageButton
+    private lateinit var songTitle: TextView
+    private lateinit var seekbarSongDuration: SeekBar
+    private lateinit var tvSongDuration: TextView
+    private var musicPlayService: MusicPlayService? = null
+    private var serviceIntent: Intent? = null
+    private var userisSeeking = false
+
     override fun run() {
         updateSeekbar()
     }
 
-    fun onClickSeekbar() {
+    private fun onClickSeekbar() {
         seekbarSongDuration.setOnSeekBarChangeListener(object :SeekBar.OnSeekBarChangeListener{
             var positionSelected = 0
             override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
@@ -61,12 +77,13 @@ class PlayListFragment : Fragment(), MainContract.View, View.OnClickListener, Ru
         })
     }
 
+
     override fun onClick(p0: View?) {
         when(p0?.id){
             R.id.play_next -> presenter.playNext()
             R.id.play_prev -> presenter.playPrev()
             R.id.button_play -> {
-                var isPlay = presenter.pause()
+                val isPlay = presenter.pause()
                 if(isPlay){
                     btnPlay.setImageResource(R.drawable.pause)
                 }else {
@@ -76,18 +93,6 @@ class PlayListFragment : Fragment(), MainContract.View, View.OnClickListener, Ru
         }
     }
 
-
-    private lateinit var presenter: MainPresenter
-    private lateinit var lvSong: RecyclerView
-    private lateinit var btnNext: ImageButton
-    private lateinit var btnPrev: ImageButton
-    private lateinit var btnPlay: ImageButton
-    private lateinit var songTitle: TextView
-    private lateinit var seekbarSongDuration: SeekBar
-    private lateinit var tvSongDuration: TextView
-    private var musicPlayService: MusicPlayService? = null
-    private var serviceIntent: Intent? = null
-    private var userisSeeking = false
 
 
 
@@ -113,10 +118,13 @@ class PlayListFragment : Fragment(), MainContract.View, View.OnClickListener, Ru
 
         }
 
+        @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
         override fun onServiceConnected(p0: ComponentName?, p1: IBinder?) {
             Log.i("click service"," onServiceConnected")
             musicPlayService = (p1 as MusicPlayService.LocalBinder).getService()
             presenter.setService(musicPlayService!!)
+            presenter.showNotification()
+
         }
 
     }
