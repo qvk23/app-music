@@ -2,56 +2,57 @@ package com.example.music_app.Service
 
 import android.app.NotificationManager
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.example.music_app.Model.Entity.Entity.Song
 import com.example.music_app.Presenter.MainPresenter
 import java.io.IOException
 
 
-class MusicPlayService() : Service() {
+class MusicPlayService : Service() {
     private val mIBinder: IBinder = LocalBinder()
     private var mediaPlayer: MediaPlayer? = null
     private var isPlay: Boolean = true
-    private var musicNotificationManager: MusicNotification? = null
-    private lateinit var presenter: MainPresenter
+    private lateinit var musicNotificationManager: Notification
 
 
     override fun onBind(intent: Intent): IBinder {
-        musicNotificationManager = MusicNotification(this)
         return mIBinder
     }
-    fun getMusicNotification(): MusicNotification? {
+    fun getNotification(): Notification? {
         return musicNotificationManager
     }
-    fun getSong(): Song {
-        return presenter.getSong()
-    }
+
+
+
     override fun onCreate() {
         super.onCreate()
-        presenter.getPresenter()
         val mp = MediaPlayer()
         mp.setWakeMode(applicationContext, PowerManager.PARTIAL_WAKE_LOCK)
+
         this.mediaPlayer = mp
+        musicNotificationManager = Notification(this)
 
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+
         return START_NOT_STICKY
     }
 
-    override fun onUnbind(intent: Intent?): Boolean {
-        return super.onUnbind(intent)
-    }
     inner class LocalBinder: Binder(){
         fun getService() = this@MusicPlayService
     }
@@ -94,10 +95,6 @@ class MusicPlayService() : Service() {
         mediaPlayer?.seekTo(position)
     }
     fun getMediaPlayerState(): Boolean {
-        if(mediaPlayer!!.isPlaying){
-            return true
-        }else{
-            return false
-        }
+        return mediaPlayer!!.isPlaying
     }
 }

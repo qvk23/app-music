@@ -1,27 +1,48 @@
 package com.example.music_app.Presenter
 
 
-import android.app.Notification
-import android.app.NotificationManager
+
+import android.content.BroadcastReceiver
 import android.content.Context
-import android.os.Build
+import android.content.Intent
+
+
 
 import android.provider.MediaStore
-import androidx.annotation.RequiresApi
-import androidx.media.app.NotificationCompat
+import android.util.Log
+
+import androidx.core.app.NotificationManagerCompat
+import com.example.music_app.AppConstant
+import com.example.music_app.AppConstant.NOTIFICATION_ID
+
 
 import com.example.music_app.Contract.MainContract
 import com.example.music_app.Model.Entity.Entity.Song
-import com.example.music_app.Service.MusicNotification
 import com.example.music_app.Service.MusicPlayService
 
 
+
+
 class MainPresenter(view: MainContract.View): MainContract.Presenter {
+//    override fun onReceive(p0: Context?, p1: Intent?) {
+//        val action = p1?.action
+//        if(AppConstant.PREV_ACTION.equals(action)){
+//            Log.i("abc","$action")
+//            playPrev()
+//        } else if(AppConstant.PLAY_ACTION.equals(action)){
+//            Log.i("abc","$action")
+//            pause()
+//        } else if(AppConstant.NEXT_ACTION.equals(action)){
+//            Log.i("abc","$action")
+//            playNext()
+//        }
+//    }
+   
     private var view: MainContract.View? = view
     private lateinit var musicPlayservice: MusicPlayService
     val songs = ArrayList<Song>()
     private var currentPos: Int? = 0
-    private lateinit var notification: Notification
+//    private lateinit var notificationManager: NotificationManagerCompat
 
     override fun seekTo(position: Int) {
         musicPlayservice.seekTo(position)
@@ -29,22 +50,22 @@ class MainPresenter(view: MainContract.View): MainContract.Presenter {
     fun getPos(): Int? {
         return musicPlayservice.getPos()
     }
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-    fun showNotification(){
-        notification = musicPlayservice.getMusicNotification()?.createNotification()!!
-        musicPlayservice.getMusicNotification()?.getNotification()!!.notify(MusicNotification.NOTIFICATION_ID,notification)
+//    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+//    fun showNotification(){
+//        notification = musicPlayservice.getMusicNotification()?.createNotification()!!
+//        musicPlayservice.getMusicNotification()?.getNotification()!!.notify(MusicNotification.NOTIFICATION_ID,notification)
+//
+//    }
 
-    }
-    fun getPresenter(): MainPresenter {
-        return this
-    }
-    fun getSong(): Song {
-        return songs[currentPos!!]
-    }
+//    fun getSong(): Song {
+//        return songs[currentPos!!]
+//    }
 
     override fun setService(service: MusicPlayService) {
         musicPlayservice = service
+
     }
+
 
     override fun playSong(position: Int) {
         currentPos = position
@@ -52,6 +73,8 @@ class MainPresenter(view: MainContract.View): MainContract.Presenter {
         val songTitle = songs[currentPos!!].title
         val songDuration = songs[currentPos!!].duration
         musicPlayservice.playMusic(songId)
+
+        notification()
 
         view?.showPlayer(songTitle,songDuration)
 
@@ -93,6 +116,9 @@ class MainPresenter(view: MainContract.View): MainContract.Presenter {
     }
 
 
+    fun getPresenter(): MainPresenter {
+        return this
+    }
     override fun playPrev() {
         currentPos = currentPos?.minus(1)
         playSong(currentPos!!)
@@ -100,6 +126,14 @@ class MainPresenter(view: MainContract.View): MainContract.Presenter {
 
     override fun pause(): Boolean {
         return musicPlayservice.pause()
+    }
+
+    fun notification(){
+        val notification = musicPlayservice.getNotification()!!.createNotification(songs[currentPos!!])
+        with(NotificationManagerCompat.from(musicPlayservice)){
+            notify(NOTIFICATION_ID,notification)
+        }
+
     }
 
 }

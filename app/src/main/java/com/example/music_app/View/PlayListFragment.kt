@@ -26,7 +26,7 @@ import com.example.music_app.Model.DateTimeFormatUtils
 import com.example.music_app.Model.Entity.Entity.Song
 import com.example.music_app.Presenter.MainPresenter
 import com.example.music_app.R
-import com.example.music_app.Service.MusicNotification
+
 import com.example.music_app.Service.MusicPlayService
 
 // TODO: Rename parameter arguments, choose names that match
@@ -118,12 +118,14 @@ class PlayListFragment : Fragment(), MainContract.View, View.OnClickListener, Ru
 
         }
 
-        @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+
         override fun onServiceConnected(p0: ComponentName?, p1: IBinder?) {
             Log.i("click service"," onServiceConnected")
             musicPlayService = (p1 as MusicPlayService.LocalBinder).getService()
             presenter.setService(musicPlayService!!)
-            presenter.showNotification()
+
+//            presenter.notification()
+//            presenter.showNotification()
 
         }
 
