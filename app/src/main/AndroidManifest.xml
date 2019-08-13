@@ -12,13 +12,6 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
-        <receiver android:name=".ActionReceive">
-            <intent-filter>
-                <action android:name="prev_action"/>
-                <action android:name="play_action"/>
-                <action android:name="next_action"/>
-            </intent-filter>
-        </receiver>
         <service
                 android:name=".Service.MusicPlayService"
                 android:enabled="true"

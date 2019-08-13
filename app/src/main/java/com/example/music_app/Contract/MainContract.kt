@@ -10,6 +10,7 @@ interface MainContract {
         fun showList(songs: ArrayList<Song>)
         fun selectSong()
         fun showPlayer(title: String,duration: Int)
+        fun updateStatusPlay()
 
 
     }
@@ -18,7 +19,7 @@ interface MainContract {
         fun setService(service: MusicPlayService)
         fun playSong(position: Int)
         fun playNext()
-        fun pause(): Boolean
+        fun pause()
         fun playPrev()
         fun seekTo(position: Int)
     }

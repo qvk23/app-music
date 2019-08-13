@@ -24,10 +24,9 @@ import java.io.IOException
 
 class MusicPlayService : Service() {
     private val mIBinder: IBinder = LocalBinder()
-    private var mediaPlayer: MediaPlayer? = null
+    var mediaPlayer: MediaPlayer? = MediaPlayer()
     private var isPlay: Boolean = true
     private lateinit var musicNotificationManager: Notification
-
 
     override fun onBind(intent: Intent): IBinder {
         return mIBinder
@@ -40,16 +39,16 @@ class MusicPlayService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        val mp = MediaPlayer()
-        mp.setWakeMode(applicationContext, PowerManager.PARTIAL_WAKE_LOCK)
-
-        this.mediaPlayer = mp
+        mediaPlayer?.setWakeMode(applicationContext, PowerManager.PARTIAL_WAKE_LOCK)
+//        val mp = MediaPlayer()
+//        mp.setWakeMode(applicationContext, PowerManager.PARTIAL_WAKE_LOCK)
+////
+//        this.mediaPlayer = mp
         musicNotificationManager = Notification(this)
 
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-
         return START_NOT_STICKY
     }
 
@@ -57,11 +56,12 @@ class MusicPlayService : Service() {
         fun getService() = this@MusicPlayService
     }
     fun playMusic(idOfSong: Int?){
+        Log.i("abc","$idOfSong")
         prepareSong(idOfSong)
         mediaPlayer?.start()
     }
 
-    fun pause(): Boolean {
+    fun pause() {
         if (mediaPlayer?.isPlaying!!){
             mediaPlayer?.pause()
             isPlay = false
@@ -69,6 +69,8 @@ class MusicPlayService : Service() {
             mediaPlayer?.start()
             isPlay = true
         }
+    }
+    fun getState(): Boolean {
         return isPlay
     }
 
@@ -85,6 +87,8 @@ class MusicPlayService : Service() {
         } catch (e: IllegalArgumentException) {
             Log.e("MusicPlayService", "Argument error")
             mediaPlayer?.reset() // Reset again to idle state
+        } catch (e: NullPointerException){
+            mediaPlayer?.reset()
         }
     }
     fun getPos(): Int? {
@@ -97,4 +101,5 @@ class MusicPlayService : Service() {
     fun getMediaPlayerState(): Boolean {
         return mediaPlayer!!.isPlaying
     }
+
 }
