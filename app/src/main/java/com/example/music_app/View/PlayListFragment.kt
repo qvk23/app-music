@@ -1,12 +1,10 @@
 package com.example.music_app.View
 
 
-import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
@@ -15,7 +13,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.music_app.Adapter.OnItemClickListener
@@ -29,15 +26,7 @@ import com.example.music_app.R
 
 import com.example.music_app.Service.MusicPlayService
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- *
- */
 class PlayListFragment : Fragment(), MainContract.View, View.OnClickListener, Runnable {
     private lateinit var presenter: MainPresenter
     private lateinit var lvSong: RecyclerView
@@ -83,16 +72,19 @@ class PlayListFragment : Fragment(), MainContract.View, View.OnClickListener, Ru
             R.id.play_next -> presenter.playNext()
             R.id.play_prev -> presenter.playPrev()
             R.id.button_play -> {
-                val isPlay = presenter.pause()
-                if(isPlay){
-                    btnPlay.setImageResource(R.drawable.pause)
-                }else {
-                    btnPlay.setImageResource(R.drawable.play)
-                }
+                presenter.pause()
+                updateStatusPlay()
             }
         }
     }
 
+    override fun updateStatusPlay(){
+        if(presenter.getState()){
+            btnPlay.setImageResource(R.drawable.pause)
+        }else {
+            btnPlay.setImageResource(R.drawable.play)
+        }
+    }
 
 
 
@@ -122,7 +114,9 @@ class PlayListFragment : Fragment(), MainContract.View, View.OnClickListener, Ru
         override fun onServiceConnected(p0: ComponentName?, p1: IBinder?) {
             Log.i("click service"," onServiceConnected")
             musicPlayService = (p1 as MusicPlayService.LocalBinder).getService()
+
             presenter.setService(musicPlayService!!)
+
 
 //            presenter.notification()
 //            presenter.showNotification()
@@ -150,9 +144,7 @@ class PlayListFragment : Fragment(), MainContract.View, View.OnClickListener, Ru
         btnNext.setOnClickListener(this)
         btnPrev.setOnClickListener(this)
         btnPlay.setOnClickListener(this)
-
         activity?.let { presenter.loadPlaylist(it) }
-
         return view
     }
     override fun showPlayer(title: String,duration: Int){
@@ -180,7 +172,13 @@ class PlayListFragment : Fragment(), MainContract.View, View.OnClickListener, Ru
             activity?.bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE)
             activity?.startService(serviceIntent)
         }
+        activity?.let { presenter.register(it) }
         selectSong()
 
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        activity?.unbindService(mConnection)
     }
 }

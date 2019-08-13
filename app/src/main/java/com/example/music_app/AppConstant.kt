@@ -7,5 +7,6 @@ object AppConstant {
     const val PREV_ACTION = "prev_action"
     const val PLAY_ACTION = "play_action"
     const val NEXT_ACTION = "next_action"
+    const val MEDIA_STATE = false
 
 }
