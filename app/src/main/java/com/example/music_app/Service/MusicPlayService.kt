@@ -1,24 +1,15 @@
 package com.example.music_app.Service
 
-import android.app.NotificationManager
+
 import android.app.Service
-import android.content.BroadcastReceiver
 import android.content.ContentUris
-import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Binder
-import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import android.provider.MediaStore
 import android.util.Log
-import android.widget.Toast
-import androidx.annotation.RequiresApi
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import com.example.music_app.Model.Entity.Entity.Song
-import com.example.music_app.Presenter.MainPresenter
 import java.io.IOException
 
 
@@ -52,6 +43,7 @@ class MusicPlayService : Service() {
         fun getService() = this@MusicPlayService
     }
     fun playMusic(idOfSong: Int?){
+        Log.i("abc","$idOfSong")
         prepareSong(idOfSong)
         mediaPlayer?.start()
     }

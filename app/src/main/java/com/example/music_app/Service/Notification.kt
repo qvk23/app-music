@@ -7,6 +7,8 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
+import android.graphics.BitmapFactory
+import android.graphics.Color
 
 import android.os.Build
 import android.util.Log
@@ -55,18 +57,20 @@ class Notification(service: MusicPlayService) {
         createNotificationChanel()
         val openPlayerIntent = Intent(musicPlayService, MainActivity::class.java)
         openPlayerIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+
         val pendingIntent = PendingIntent.getActivities(musicPlayService, 0, arrayOf(openPlayerIntent),0)
         val builder = NotificationCompat.Builder(musicPlayService, CHANNEL_ID)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setSmallIcon(R.drawable.ic_music_video_black_24dp)
-            .setColor(ContextCompat.getColor(context,R.color.colorPrimary))
+            .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_close_black_24dp))
+            .setColor(Color.GREEN)
             .addAction(notificationAction(PREV_ACTION))
             .addAction(notificationAction(PLAY_ACTION))
             .addAction(notificationAction(NEXT_ACTION))
             .setContentTitle(song.title)
             .setContentText(song.artist)
             .setContentIntent(pendingIntent)
-
+            .setShowWhen(false)
             .setStyle(androidx.media.app.NotificationCompat.MediaStyle()
                 .setShowActionsInCompactView(0,1,2))
             .build()

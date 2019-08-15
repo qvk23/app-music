@@ -5,6 +5,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
@@ -13,6 +14,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.music_app.Adapter.OnItemClickListener
@@ -39,9 +42,25 @@ class PlayListFragment : Fragment(), MainContract.View, View.OnClickListener, Ru
     private var musicPlayService: MusicPlayService? = null
     private var serviceIntent: Intent? = null
     private var userisSeeking = false
+    private val MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 123
 
     override fun run() {
         updateSeekbar()
+    }
+    private fun checkPermission(){
+        if (ContextCompat.checkSelfPermission(context!!, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED) {
+
+            activity?.let {
+                ActivityCompat.requestPermissions(
+                    it,
+                    arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
+                    MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE)
+            }
+
+        } else {
+            activity?.let { presenter.loadPlaylist(it) }
+        }
     }
 
     private fun onClickSeekbar() {
@@ -118,8 +137,7 @@ class PlayListFragment : Fragment(), MainContract.View, View.OnClickListener, Ru
             presenter.setService(musicPlayService!!)
 
 
-//            presenter.notification()
-//            presenter.showNotification()
+
 
         }
 
@@ -144,7 +162,7 @@ class PlayListFragment : Fragment(), MainContract.View, View.OnClickListener, Ru
         btnNext.setOnClickListener(this)
         btnPrev.setOnClickListener(this)
         btnPlay.setOnClickListener(this)
-        activity?.let { presenter.loadPlaylist(it) }
+        checkPermission()
         return view
     }
     override fun showPlayer(title: String,duration: Int){

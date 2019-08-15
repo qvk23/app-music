@@ -5,9 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 
+
 import android.provider.MediaStore
 
+
 import androidx.core.app.NotificationManagerCompat
+
 import com.example.music_app.AppConstant.NEXT_ACTION
 import com.example.music_app.AppConstant.NOTIFICATION_ID
 import com.example.music_app.AppConstant.PLAY_ACTION
@@ -17,24 +20,26 @@ import com.example.music_app.Model.Entity.Entity.Song
 import com.example.music_app.Service.MusicPlayService
 
 
+class MainPresenter(private var view: MainContract.View) : MainContract.Presenter {
 
-class MainPresenter(private var view: MainContract.View): MainContract.Presenter{
+    private lateinit var musicPlayservice: MusicPlayService
+    private var songs = ArrayList<Song>()
+    private var currentPos: Int? = 0
+    private var mediaState = false
 
-
-
-
-    fun register(context: Context){
+    fun register(context: Context) {
         val filter = IntentFilter()
         filter.addAction(PREV_ACTION)
         filter.addAction(PLAY_ACTION)
         filter.addAction(NEXT_ACTION)
-        context.registerReceiver(ActionReceive(),filter)
+        context.registerReceiver(ActionReceive(), filter)
     }
-    private inner class ActionReceive: BroadcastReceiver(){
+    private inner class ActionReceive : BroadcastReceiver() {
+
         override fun onReceive(p0: Context?, p1: Intent?) {
             val action = p1?.action
 
-            when(action){
+            when (action) {
                 "prev_action" -> playPrev()
                 "play_action" -> {
                     pause()
@@ -46,14 +51,8 @@ class MainPresenter(private var view: MainContract.View): MainContract.Presenter
 
         }
 
+
     }
-
-
-    private lateinit var musicPlayservice: MusicPlayService
-    private var songs = ArrayList<Song>()
-    private var currentPos: Int? = 0
-    private var mediaState = false
-
 
 
     override fun seekTo(position: Int) {
@@ -79,22 +78,25 @@ class MainPresenter(private var view: MainContract.View): MainContract.Presenter
         val songDuration = songs[currentPos!!].duration
         musicPlayservice.playMusic(songId)
         notification()
-        view.showPlayer(songTitle,songDuration)
+        view.showPlayer(songTitle, songDuration)
         musicPlayservice.mediaPlayer!!.setOnCompletionListener {
-            if(currentPos == songs.size - 1){
+            if (currentPos == songs.size - 1) {
                 stopPlaying()
-            }else{
+            } else {
                 playSong(position + 1)
             }
+            playSong(nextSong)
+
         }
 
     }
-    private fun stopPlaying(){
+
+    private fun stopPlaying() {
         musicPlayservice.mediaPlayer!!.stop()
     }
 
 
-    override fun loadPlaylist(context: Context){
+    override fun loadPlaylist(context: Context) {
         val resolver = context.contentResolver
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
@@ -107,26 +109,27 @@ class MainPresenter(private var view: MainContract.View): MainContract.Presenter
             projection,
             null,
             null,
-            null)
-        if(cursor != null && cursor.moveToFirst()){
+            null
+        )
+        if (cursor != null && cursor.moveToFirst()) {
             val songTitle: Int = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)
             val songArtist: Int = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)
             val songId: Int = cursor.getColumnIndex(MediaStore.Audio.Media._ID)
             val songDuration = cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)
-            do{
+            do {
                 val currentTitle: String = cursor.getString(songTitle)
                 val currentArtist: String = cursor.getString(songArtist)
                 val currentId: Int = cursor.getInt(songId)
                 val currentDuration = cursor.getInt(songDuration)
                 songs.add(Song(currentId, currentTitle, currentArtist, currentDuration))
-            }while(cursor.moveToNext())
+            } while (cursor.moveToNext())
         }
         cursor?.close()
         view.showList(songs)
     }
 
     override fun playNext() {
-        if(currentPos == songs.size - 1){
+        if (currentPos == songs.size - 1) {
             currentPos = 0
         } else {
             currentPos = currentPos?.plus(1)
@@ -135,7 +138,7 @@ class MainPresenter(private var view: MainContract.View): MainContract.Presenter
     }
 
     override fun playPrev() {
-        if(currentPos == 0){
+        if (currentPos == 0) {
             currentPos = songs.size - 1
         } else {
             currentPos = currentPos?.minus(1)
@@ -143,7 +146,7 @@ class MainPresenter(private var view: MainContract.View): MainContract.Presenter
         playSong(currentPos!!)
     }
 
-    override fun pause(){
+    override fun pause() {
         musicPlayservice.pause()
         mediaState = musicPlayservice.getState()
         musicPlayservice.getNotification()!!.createNotification(songs[currentPos!!])
@@ -152,10 +155,11 @@ class MainPresenter(private var view: MainContract.View): MainContract.Presenter
     fun getState(): Boolean {
         return mediaState
     }
-    fun notification(){
+
+    fun notification() {
         val notification = musicPlayservice.getNotification()!!.createNotification(songs[currentPos!!])
-        with(NotificationManagerCompat.from(musicPlayservice)){
-            notify(NOTIFICATION_ID,notification)
+        with(NotificationManagerCompat.from(musicPlayservice)) {
+            notify(NOTIFICATION_ID, notification)
         }
 
     }
